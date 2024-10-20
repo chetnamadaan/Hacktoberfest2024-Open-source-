@@ -1,0 +1,73 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <set>
+#include <string>
+
+class DFA {
+public:
+    DFA(std::set<std::string> states, std::string initialState,
+        std::set<std::string> acceptStates, std::set<char> alphabet,
+        std::unordered_map<std::string, std::unordered_map<char, std::string>> transitions)
+        : states(states), initialState(initialState), acceptStates(acceptStates),
+          alphabet(alphabet), transitions(transitions) {}
+
+    bool accepts(const std::string& input) {
+        std::string currentState = initialState;
+
+        for (char symbol : input) {
+            if (alphabet.find(symbol) == alphabet.end()) {
+                std::cout << "Input symbol '" << symbol << "' is not in the alphabet.\n";
+                return false;
+            }
+            currentState = nextState(currentState, symbol);
+            if (currentState.empty()) {
+                return false;
+            }
+        }
+
+        return acceptStates.find(currentState) != acceptStates.end();
+    }
+
+private:
+    std::set<std::string> states;
+    std::string initialState;
+    std::set<std::string> acceptStates;
+    std::set<char> alphabet;
+    std::unordered_map<std::string, std::unordered_map<char, std::string>> transitions;
+
+    std::string nextState(const std::string& currentState, char symbol) {
+        if (transitions.find(currentState) != transitions.end() &&
+            transitions[currentState].find(symbol) != transitions[currentState].end()) {
+            return transitions[currentState][symbol];
+        }
+        return "";
+    }
+};
+
+int main() {
+    std::set<std::string> states = {"q0", "q1", "q2"};
+    std::string initialState = "q0";
+    std::set<std::string> acceptStates = {"q2"};
+    std::set<char> alphabet = {'a', 'b'};
+
+    std::unordered_map<std::string, std::unordered_map<char, std::string>> transitions = {
+        {"q0", {{'a', "q1"}, {'b', "q0"}}},
+        {"q1", {{'a', "q1"}, {'b', "q2"}}},
+        {"q2", {{'a', "q2"}, {'b', "q2"}}}
+    };
+
+    DFA dfa(states, initialState, acceptStates, alphabet, transitions);
+
+    std::string testInput;
+    std::cout << "Enter a string to test: ";
+    std::cin >> testInput;
+
+    if (dfa.accepts(testInput)) {
+        std::cout << "The string \"" << testInput << "\" is accepted by the DFA.\n";
+    } else {
+        std::cout << "The string \"" << testInput << "\" is not accepted by the DFA.\n";
+    }
+
+    return 0;
+}
